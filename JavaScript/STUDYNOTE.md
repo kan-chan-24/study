@@ -8,7 +8,9 @@ const obj = { a: 1, b: 2 }
 const newObj = { ...obj, a: 3 }
 ```
 
-- 理由: 同じキーが複数回出てきた場合、JavaScript は「最後に書かれた値」で上書きする
+- 検証結果の理由: 同じキーが複数回出てきた場合、JavaScript は「最後に書かれた値」で上書きする
+- この`...obj`が、`...prev`と同じ役割だと思っていい
+
 ## 2.`multiple_images: selectedFiles`で「選び直し」が実現できていた理由
 
 ``` 
@@ -59,7 +61,7 @@ setFormData({
 - 考察：...prev がないと、明記されている`multiple_images`と`image`の処理だけが行われてしまう。title や description は消えてしまう。
 - 解説：`setFormData`に渡したオブジェクトが「新しい`formData`そのもの」になってしまうので、書いていないキーはすべて失われます。
 
-## 4.なぜ`image.undefined`も一緒に書いているのか
+## 4.【番外編】なぜ`image.undefined`も一緒に書いているのか
 
 ```
   setFormData((prev) => ({
