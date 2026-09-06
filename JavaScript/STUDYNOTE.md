@@ -82,3 +82,77 @@ setFormData({
 - 考察：`image`に入っている画像を消さないと、複数選択したときに`image`と`multiple_images`の両方に画像が残ってしまう。
 - 解説：「単数用の入れ物(`image`)」と「複数用の入れ物(`multiple_images`)」が両方とも値を持ってしまう
 
+# forEachの書き方
+
+``` javascript
+// 配列の各要素を表示
+const numbers = [1, 2, 3, 4, 5];
+numbers.forEach(num => {
+    console.log(num);
+});
+//出力：
+//1 2 3 4 5
+```
+
+``` javascript
+// インデックスを含めて出力
+const fruits = ["りんご", "バナナ", "ぶどう"];
+fruits.forEach((fruit, index) => {
+    console.log(`${index}: ${fruit}`);
+});
+//出力：
+//0: りんご
+//1: バナナ
+//2: ぶどう
+```
+
+## `forEach`と`for`ループの違い
+
+|比較項目|forEach|for ループ|
+| ---- | ---- | ---- |
+|記述の簡潔さ|◎ 短く書ける|△ やや長くなる|
+|ループの途中終了|✖ break できない|◎ break 可能|
+|return の扱い|✖ return できない|◎ return 可能|
+
+``` javascript
+const numbers = [1, 2, 3, 4, 5];
+
+// forEach（ループを途中で抜けられない）
+numbers.forEach(num => {
+    if (num === 3) {
+        return; // ループは止まらない（単なる関数のreturnで、ループには影響しない）
+    }
+    console.log(num);
+});
+// 出力：
+// 1
+// 2
+// 4
+// 5
+
+// for ループ（break で終了可能）
+for (let i = 0; i < numbers.length; i++) {
+    if (numbers[i] === 3) {
+        break; // ループ終了
+    }
+    console.log(numbers[i]);
+}
+// 出力：
+// 1
+// 2
+```
+## mapとの違い
+- `forEach`と`map`は似ていますが、`map`は新しい配列を返すのに対して、`forEach`は配列を変更せずに処理を実行します。
+
+``` javascript
+const numbers = [1, 2, 3, 4, 5];
+
+// forEach（結果を返さない）
+numbers.forEach(num => num * 2);
+console.log(numbers); // [1, 2, 3, 4, 5]
+
+// map（新しい配列を返す）
+const doubled = numbers.map(num => num * 2);
+console.log(doubled); // [2, 4, 6, 8, 10]
+```
+- データを変換したいなら`map`、処理を実行するだけなら`forEach`
