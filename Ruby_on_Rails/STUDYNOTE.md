@@ -7,11 +7,25 @@
  - 画像のサイズをリサイズするか、するならどんなサイズに変換するか
  - どんな拡張子（jpg, png など）のファイルだけ許可するか
 
+実際に`ImageUploader`に記述されているコードの意味 
 ``` Ruby
-// 画像をどこに保存するか
-  def store_dir
-    "uploads/#{model.class.to_s.underscore}/#{mounted_as}/#{model.id}"
-  end
+# 「アップロードしたファイルを、サーバーの中のファイルとして保存する」という設定
+storage :file
+
+# 画像をどこに保存するか
+def store_dir
+"uploads/#{model.class.to_s.underscore}/#{mounted_as}/#{model.id}"
+end
+
+# 「まだ画像が投稿されていないときに表示する、デフォルトの画像」の設定
+def default_url(*args)
+  ActionController::Base.helpers.asset_path("default.png")
+end
+
+# 「アップロードを許可する拡張子」を配列で指定
+def extension_allowlist
+  %w[jpg jpeg gif png]
+end
 ```
 ---
 # rails g model / rails g migration / rails db:migrate の違いについて
