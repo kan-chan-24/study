@@ -1,5 +1,7 @@
 # Railsのメモ
+
 ---
+
 # ImageUploader の役割について
 - CarrierWave（画像アップロードを扱うgem）の`Uploader`クラスは、簡単に言うと「画像をどう扱うかのルールブック」
 - ImageUploaderの役割は以下
@@ -27,7 +29,9 @@ def extension_allowlist
   %w[jpg jpeg gif png]
 end
 ```
+
 ---
+
 # rails g model / rails g migration / rails db:migrate の違いについて
 | コマンド | 役割 |
 |---|---|
@@ -54,7 +58,9 @@ end
 - 確認してみると`rails g model`を行った際に生成されたマイグレーションファイルは`down`になっている
 
 つまり、`rails g model`、`rails g migration`の後マイグレーションファイルをDBに反映（up）にするには、`rails db:migrate`が必要になる
+
 ---
+
 # permit（ストロングパラメータ）にシンボルとハッシュを渡す時の違い
 ```Ruby
 def memory_params
