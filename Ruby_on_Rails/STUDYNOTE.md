@@ -131,3 +131,50 @@ MemoryImageモデルには`mount_uploader :image`, ImageUploaderという記述�
 |&.url|それがnilでなければ、実際の画像URLを取得|
 
 つまり全体としては「画像が1枚もなければnil、あれば先頭画像のURL文字列」を安全に取得する1行、ということになります。
+
+# 画像ファイル保存時にFile型とString型を扱う時の違い
+```javascript
+// 一覧画面用（先頭一枚のサムネイル画像だけを持つ)
+export type Memory = {
+  id: number
+  title: string
+  body: string
+  public_flag: boolean
+  created_at: string
+  user_name: string
+  image_url?: string
+  user_id: number
+}
+
+// 詳細画面用（スライドショー用のために全画像を配列で持つ）
+export type MemoryDetail = Omit<Memory, 'image_url'> & {
+  image_urls: string[]
+}
+
+// 投稿フォーム用（常に画像を配列で扱う）
+export type MemoryFormData = {
+  title: string
+  body: string
+  public_flag: boolean
+  multiple_images?: File[]
+}
+```
+
+上記の型定義の中で画像を扱っているカラムなのに、`string`で型を定義している箇所と`File`で型定義している箇所がある
+
+その違いを簡単にまとめる
+
+## Fileは「情報」だけでなく「中身そのもの」を持つ
+
+Fileは、単なるファイル名やサイズなどの「情報（メタデータ）」だけを持っているわけではありません。その画像ファイルの中身（実際のバイナリデータ）そのものを持っています。だからこそ、ブラウザ上でプレビュー表示できたり（`URL.createObjectURL(file)`など）、サーバーに送信できたり（`formData.append('memory[multiple_images][]'`, `file`)）するわけです。
+
+イメージとしては、Fileは「まだサーバーにアップロードする前の、ユーザーのパソコンの中にある画像データそのものを表すオブジェクト」です。`<input type="file">`でファイルを選んだ瞬間に、ブラウザがこのオブジェクトを作ってくれます。
+
+## なぜ他の型はstring（URL）なのか
+
+これがポイントで、単に「扱う値が文字列だから」というより、そのデータが今どの段階にあるかが理由です。
+
+- `MemoryFormData`（投稿フォーム用）：アップロードする前の状態。ユーザーのパソコンにある画像データそのものを扱うのでFile
+- `Memory・MemoryDetail`（一覧・詳細表示用）：すでにサーバーにアップロードが完了した後の状態。画像の中身（バイナリデータ）は、もうRailsサーバー側のストレージに保存済みです。フロントが受け取るのは、その保存場所を示す「住所」のような文字列（URL）だけで十分なので`string`
+
+つまり、`File` → （アップロード）→ サーバーに保存 → `string`（URL）としてフロントに返ってくる、という画像データの「旅」の途中経過によって型が変わっている、と捉えるとしっくりくると思います。画像そのものを毎回やり取りするのは重いので、一度保存してしまえば「どこに保存したか」という住所（URL）だけをやり取りすればいい、という考え方です。
