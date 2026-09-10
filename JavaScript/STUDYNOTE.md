@@ -158,3 +158,98 @@ const doubled = numbers.map(num => num * 2);
 console.log(doubled); // [2, 4, 6, 8, 10]
 ```
 - データを変換したいなら`map`、処理を実行するだけなら`forEach`
+
+# `import`する時の{}の有無の違い
+
+```
+import { Memory } from '../../../types/memory'
+```
+
+{}の中身は「変数名」ではなく「取ってくる名前」
+{}の中に書くのは、変数を保存するための"名前"ではなく、インポート元のファイルが外に公開している名前をそのまま指定する部分です。
+
+memory.tsを見ると、こう書かれています。
+
+```
+export type Memory = { ... }
+export type MemoryDetail = { ... }
+```
+
+`export`が付いているものは、他のファイルから使える状態になります。つまり`memory.ts`は「Memoryという名前」と「MemoryDetailという名前」の、2種類の型を公開しているわけです。
+
+importする側は、その中から「どれが欲しいか」を選ぶだけ
+
+```
+import { Memory } from '...'       // Memoryという型が欲しい
+import { MemoryDetail } from '...' // MemoryDetailという型が欲しい
+```
+
+これは「Memoryという名前の入れ物を作って、そこに何かを保存する」のではなく、「公開されている型のうちMemoryという名前のものを使わせてください」という指名に近いイメージです。
+
+## {}がない場合の意味
+
+```
+import MemoryCard from './_components/memory-card'
+```
+
+{}なし = そのファイルの「代表選手」を受け取ること
+デフォルトexport(default export) →importするとき{}は不要
+
+memory-card.tsxの中はおそらくこうなっています。
+
+```
+const MemoryCard = () => { ... }
+export default MemoryCard
+```
+
+`export default`は「このファイルが公開する物は、これが代表(メイン)です」という宣言です。1つのファイルにつき`export default`は1個だけしか書けません。
+
+`import`する側は代表選手を受け取るだけなので、名前を指定して選ぶ必要がなく、{}も要りません。
+
+```
+import MemoryCard from './_components/memory-card'
+```
+
+## まとめると
+
+|書き方|exportする側|importする側|名前は自由に変えられる?|
+|{}あり|export const X = ...| import { X } from {...}|✕(元の名前と一致させる必要あり)|
+|{}なし|export default X|import X from {...}|○(好きな名前を付けられる)|
+
+memory.tsが{}必須だったのは、`Memory`と`MemoryDetail`という複数の型を名前付きで`export`していたからです。一方`memory-card.tsx`のようなReactコンポーネントのファイルは、1ファイル1コンポーネントが基本なので、デフォルト`export`がよく使われます。
+
+# Props・親子関係のまとめ
+
+## オブジェクトとは
+
+- 変数:値を1つだけ入れる箱(例:const name = 'Taro')
+- 関数:処理をまとめたもの。呼び出すと動く
+- オブジェクト:複数の値を、名前(キー)付きでひとまとめにした箱(例:{ name: 'Taro', age: 20 })。中には値だけでなく関数も入れられる
+
+## Propsの正体
+
+- <MemoryForm formData={formData} onChange={handleChange} />という書き方は、裏側では「{ formData: formData, onChange: handleChange }という1つのオブジェクトを組み立てて、MemoryFormという関数に渡している」のと同じ
+- つまりPropsは特別な仕組みではなく、ただのオブジェクト。複数の値・関数を1つにまとめて、コンポーネント(関数)に渡しているだけ
+
+## 関数を値として渡すということ
+
+- JavaScriptでは関数も数値や文字列と同じ「ただの値」として扱える
+- handleChange(カッコなし)=「実行はまだしない、関数そのものを渡す」
+- handleChange()(カッコあり)=「今すぐ実行する」
+- onChange={handleChange}は前者。「必要なタイミングで、渡した先(MemoryForm)が代わりに実行してね」という意味
+
+## export/importとの違い
+
+||誰が使えるか|方向性|
+|---|---|---|
+|export/import|プロジェクト内の誰でも（importすれば）|使う側が能動的に取りに行く|
+|props|親が名指しした、その子コンポーネントだけ|親から子への一方通行の受け渡し|
+
+exportしていない関数(const handleChange = ...)は他ファイルから直接使えない。propsで渡すことで、その1回の描画に限り、名指しされた子コンポーネントだけがそれを使えるようになる。
+
+## 親子関係を作っているコードはどこか
+
+- 親たらしめるコード:親コンポーネントのreturn(描画結果)の中に、<MemoryForm ... />のように別コンポーネントを埋め込んで書くこと、それ自体
+- 子たらしめるコード:memory-form.tsx側には存在しない。「誰かのreturnの中に埋め込まれる」という受動的な立場そのものが「子」の意味であり、能動的な宣言は不要
+- 証拠:同じMemoryFormが、edit/index.tsxから呼ばれれば「editの子」、new/index.tsxから呼ばれれば「newの子」になる。ファイル自身は自分がどちらの子かを知らない、その場限りの関係
+- formData={...}などのprops指定は、親子関係を作っているのではなく、すでにできている親子関係の上に荷物を追加で積んでいるだけ
