@@ -253,3 +253,19 @@ exportしていない関数(const handleChange = ...)は他ファイルから直
 - 子たらしめるコード:memory-form.tsx側には存在しない。「誰かのreturnの中に埋め込まれる」という受動的な立場そのものが「子」の意味であり、能動的な宣言は不要
 - 証拠:同じMemoryFormが、edit/index.tsxから呼ばれれば「editの子」、new/index.tsxから呼ばれれば「newの子」になる。ファイル自身は自分がどちらの子かを知らない、その場限りの関係
 - formData={...}などのprops指定は、親子関係を作っているのではなく、すでにできている親子関係の上に荷物を追加で積んでいるだけ
+
+# URL.createObujectURL(file)
+
+`URL.createObjectURL()` は、ローカルの File オブジェクトや Blob オブジェクトに対する一時的な URL を生成し、ブラウザ上でプレビュー表示する際に便利な JavaScript メソッドです。
+
+` <img>`タグのsrcはURL文字列しか受け取れないので、Fileオブジェクトそのままでは表示できず、この変換が必要になります。
+
+```javascript
+{ formData.multiple_images?.map((image, index) =>
+  <img
+    ...
+    src={ URL.createObjectURL(image) }
+    ...
+  />
+)}
+```
